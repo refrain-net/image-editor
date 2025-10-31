@@ -1,6 +1,7 @@
 // Firebaseの設定（自分のプロジェクトに合わせて変更）
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-storage.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-storage.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXOFcxPcYBOWbd7dQQfV0YIvdBLBv2uUs",
