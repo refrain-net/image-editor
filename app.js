@@ -1,4 +1,12 @@
-import { storage, ref, uploadBytes, getDownloadURL } from './firebase-config.js';
+import { storage, auth } from './firebase-config.js';
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-storage.js";
+import {
+  signInAnonymously
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
 const fileInput = document.getElementById('fileInput');
 const canvas = document.getElementById('canvas');
@@ -8,16 +16,24 @@ const saveBtn = document.getElementById('saveBtn');
 let image = new Image();
 let startX, startY, isDrawing = false;
 
+// 匿名ログイン
+signInAnonymously(auth)
+  .then(() => {
+    console.log("匿名ログイン成功");
+  })
+  .catch((error) => {
+    console.error("匿名ログイン失敗:", error);
+  });
+
+// ファイル選択 → Storageにアップロード → 表示
 fileInput.addEventListener('change', async (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Firebase Storage にアップロード
-  const storageRef = ref(storage, `originals/${file.name}`);
-  await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(storageRef);
+  const refPath = storageRef(storage, `originals/${file.name}`);
+  await uploadBytes(refPath, file);
+  const url = await getDownloadURL(refPath);
 
-  // 画像を表示
   image.src = url;
   image.onload = () => {
     canvas.width = image.width;
@@ -26,7 +42,7 @@ fileInput.addEventListener('change', async (e) => {
   };
 });
 
-// 四角範囲の選択と縞模様描画
+// 四角範囲選択 → 白の縞模様描画
 canvas.addEventListener('mousedown', (e) => {
   startX = e.offsetX;
   startY = e.offsetY;
@@ -44,7 +60,6 @@ canvas.addEventListener('mouseup', (e) => {
   const w = Math.abs(endX - startX);
   const h = Math.abs(endY - startY);
 
-  // 白の縞模様を描画
   ctx.save();
   ctx.fillStyle = 'white';
   for (let i = 0; i < h; i += 10) {
@@ -53,10 +68,11 @@ canvas.addEventListener('mouseup', (e) => {
   ctx.restore();
 });
 
-// 保存ボタンで画像を保存
+// 保存ボタン → 編集後画像をダウンロード
 saveBtn.addEventListener('click', () => {
+  const editedBase64 = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.download = 'edited-image.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = editedBase64;
   link.click();
 });
